@@ -29,8 +29,19 @@ async function run() {
 
 
     const classesCollection = client.db("enigmaDB").collection('classes');
+    const mySelectedClassCollection = client.db("enigmaDB").collection('mySelectedClass');
+
+
+    // classes
     app.get('/classes', async(req,res)=>{
         const result = await classesCollection.find().toArray();
+        res.send(result);
+    })
+
+    // my selected class collection
+    app.post('/mySelectedClass', async(req,res)=>{
+        const item = req.body;
+        const result = await mySelectedClassCollection.insertOne(item);
         res.send(result);
     })
 
