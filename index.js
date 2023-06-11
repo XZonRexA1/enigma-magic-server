@@ -93,7 +93,7 @@ async function run() {
       const email = req.params.email;
 
       if (req.decoded.email !== email) {
-        res.send({ admin: false })
+        return res.status(403).send({ error: true, message: 'forbidden access' });
       }
 
       const query = { email: email }
@@ -120,9 +120,8 @@ async function run() {
       const email = req.params.email;
 
       if (req.decoded.email !== email) {
-        res.send({ admin: false })
+        return res.status(403).send({ error: true, message: 'forbidden access' });
       }
-
       const query = { email: email }
       const user = await usersCollection.findOne(query);
       const result = { admin: user?.role === 'instructor' }
