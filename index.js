@@ -60,7 +60,7 @@ async function run() {
     })
 
     // users related apis
-    app.get('/users',verifyJWT, async(req,res)=>{
+    app.get('/users', async(req,res)=>{
       const result = await usersCollection.find().toArray();
       res.send(result);
     })
@@ -76,7 +76,22 @@ async function run() {
       res.send(result);
     })
 
-    app.patch('/users/admin/:id',verifyJWT, async(req,res)=>{
+    // check admin
+    app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+
+      if (req.decoded.email !== email) {
+        res.send({ admin: false })
+      }
+
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      const result = { admin: user?.role === 'admin' }
+      res.send(result);
+    })
+
+
+    app.patch('/users/admin/:id', async(req,res)=>{
       const id = req.params.id;
       const filter = {_id: new ObjectId(id)};
       const updateDoc = {
@@ -88,7 +103,21 @@ async function run() {
       res.send(result);
     })
 
-    app.patch('/users/instructor/:id',verifyJWT, async(req,res)=>{
+    // check instructor
+    app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+
+      if (req.decoded.email !== email) {
+        res.send({ admin: false })
+      }
+
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      const result = { admin: user?.role === 'instructor' }
+      res.send(result);
+    })
+    
+    app.patch('/users/instructor/:id', async(req,res)=>{
       const id = req.params.id;
       const filter = {_id: new ObjectId(id)};
       const updateDoc = {
@@ -113,6 +142,12 @@ async function run() {
       if (!email) {
         res.send([]);
       }
+
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res.status(403).send({ error: true, message: 'forbidden access' })
+      }
+
       const query = { email: email };
       const result = await mySelectedClassCollection.find(query).toArray();
       res.send(result);
@@ -132,7 +167,7 @@ async function run() {
     });
 
     // create payment intent
-    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+    app.post("/create-payment-intent",  async (req, res) => {
       const { price } = req.body;
       const amount = price * 100;
       const paymentIntent = await stripe.paymentIntents.create({
@@ -151,7 +186,7 @@ async function run() {
       res.send(result);
     });
     
-    app.post('/payments', verifyJWT, async(req,res)=>{
+    app.post('/payments',  async(req,res)=>{
       const payment = req.body;
       const insertResult = await paymentCollection.insertOne(payment);
 
