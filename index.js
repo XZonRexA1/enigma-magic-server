@@ -30,6 +30,7 @@ async function run() {
     const mySelectedClassCollection = client
       .db("enigmaDB")
       .collection("mySelectedClass");
+    const paymentCollection = client.db("enigmaDB").collection("payments");
 
     // classes
     app.get("/classes", async (req, res) => {
@@ -74,6 +75,17 @@ async function run() {
         clientSecret: paymentIntent.client_secret,
       });
     });
+
+    // payment related api
+    app.post('/payments', async(req,res)=>{
+      const payment = req.body;
+      const insertResult = await paymentCollection.insertOne(payment);
+
+      const query={_id: {$in: payment.selectedClass.map(id => new ObjectId(id))}}
+      const deleteResult = await mySelectedClassCollection.deleteOne(query)
+
+      res.send({ insertResult, deleteResult});
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
