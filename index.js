@@ -31,6 +31,16 @@ async function run() {
       .db("enigmaDB")
       .collection("mySelectedClass");
     const paymentCollection = client.db("enigmaDB").collection("payments");
+    const usersCollection = client.db('enigmaDB').collection("users")
+
+
+
+    // users related apis
+    app.post('/users', async(req,res)=>{
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    })
 
     // classes
     app.get("/classes", async (req, res) => {
@@ -77,6 +87,11 @@ async function run() {
     });
 
     // payment related api
+    app.get('/payments', async (req, res) => {
+      const result = await paymentCollection.find().sort({ date: -1 }).toArray();
+      res.send(result);
+    });
+    
     app.post('/payments', async(req,res)=>{
       const payment = req.body;
       const insertResult = await paymentCollection.insertOne(payment);
